@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import confetti from 'canvas-confetti';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
@@ -20,6 +20,7 @@ import { CareerAdvisor } from './components/Dashboard/CareerAdvisor';
 import { InterviewPrep } from './components/Dashboard/InterviewPrep';
 import { ResumeAnalysis } from './types';
 import { 
+  SAMPLE_PROFILES,
   SAMPLE_ANALYSIS_RESULT, 
   SAMPLE_TARGET_ROLE 
 } from './utils/sampleData';
@@ -63,11 +64,12 @@ export function App() {
     }
   };
 
-  // See Sample Report Handler
-  const handleLoadSampleReport = () => {
-    setAnalysisResult(SAMPLE_ANALYSIS_RESULT);
-    setTargetRole(SAMPLE_TARGET_ROLE);
-    setFileName('Alexander_Vance_Resume.pdf');
+  // See Sample Report Handler with profile support
+  const handleLoadSampleReport = (profileId = 'alexander-vance') => {
+    const profile = SAMPLE_PROFILES.find(p => p.id === profileId) || SAMPLE_PROFILES[0];
+    setAnalysisResult(profile.analysis);
+    setTargetRole(profile.targetRole);
+    setFileName(`${profile.name.replace(/\s+/g, '_')}_Resume.pdf`);
     setHasCustomJd(true);
     setCurrentView('dashboard');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -144,7 +146,7 @@ export function App() {
         onNavigate={setCurrentView}
         onOpenApiKeyModal={() => setIsApiKeyModalOpen(true)}
         hasCustomApiKey={Boolean(apiKey)}
-        onLoadSampleReport={handleLoadSampleReport}
+        onSelectSampleProfile={handleLoadSampleReport}
       />
 
       {/* API Key Modal */}
@@ -173,7 +175,7 @@ export function App() {
                   Enter Gemini API Key
                 </button>
                 <button
-                  onClick={handleLoadSampleReport}
+                  onClick={() => handleLoadSampleReport('alexander-vance')}
                   className="px-3 py-1 rounded-lg text-xs font-medium border border-[#830000] text-gray-200 hover:text-white hover:border-[#BC0202] transition-colors"
                 >
                   Load Sample Report Instead
@@ -212,7 +214,7 @@ export function App() {
           <ResumeUpload
             onAnalyze={handleAnalyze}
             isLoading={isAnalyzing}
-            onLoadSampleReport={handleLoadSampleReport}
+            onLoadSampleReport={() => handleLoadSampleReport('alexander-vance')}
           />
         )}
 

@@ -2,22 +2,16 @@ import React, { useState, useRef } from 'react';
 import { 
   UploadCloud, 
   FileText, 
-  Clipboard, 
   Sparkles, 
-  Check, 
   AlertCircle, 
   X, 
   ChevronDown, 
   ShieldCheck, 
   ArrowRight,
-  Briefcase
+  UserCheck
 } from 'lucide-react';
 import { parseResumeFile, MAX_FILE_SIZE_BYTES } from '../../utils/resumeParser';
-import { 
-  SAMPLE_RESUME_TEXT, 
-  SAMPLE_TARGET_ROLE, 
-  SAMPLE_JOB_DESCRIPTION 
-} from '../../utils/sampleData';
+import { SAMPLE_PROFILES } from '../../utils/sampleData';
 
 interface ResumeUploadProps {
   onAnalyze: (data: {
@@ -36,7 +30,7 @@ const POPULAR_ROLES = [
   "Full Stack Software Engineer",
   "Senior Frontend Engineer (React / TypeScript)",
   "Backend Distributed Systems Engineer",
-  "Machine Learning / AI Engineer",
+  "Staff AI / ML Systems Engineer",
   "DevOps / SRE / Cloud Platform Engineer",
   "Staff Software Architect",
   "Engineering Manager / Tech Lead",
@@ -115,12 +109,13 @@ export const ResumeUpload: React.FC<ResumeUploadProps> = ({
     }
   };
 
-  const handleLoadSample = () => {
-    setResumeText(SAMPLE_RESUME_TEXT);
-    setFileDetails({ name: 'Alexander_Vance_Resume.pdf', size: 1024 * 142 });
-    setSelectedRole(SAMPLE_TARGET_ROLE);
-    setJobDescription(SAMPLE_JOB_DESCRIPTION);
-    setExperienceLevel(EXPERIENCE_LEVELS[2]);
+  const handleLoadSample = (profileIndex = 0) => {
+    const profile = SAMPLE_PROFILES[profileIndex] || SAMPLE_PROFILES[0];
+    setResumeText(profile.resumeText);
+    setFileDetails({ name: `${profile.name.replace(/\s+/g, '_')}_Resume.pdf`, size: 1024 * 142 });
+    setSelectedRole(profile.targetRole);
+    setJobDescription(profile.jobDescription);
+    setExperienceLevel(profile.experienceLevel);
     setActiveTab('upload');
     setParseError(null);
   };
@@ -163,14 +158,23 @@ export const ResumeUpload: React.FC<ResumeUploadProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs text-gray-500 font-mono hidden sm:inline">Pre-fill demo:</span>
           <button
             type="button"
-            onClick={handleLoadSample}
-            className="btn-secondary flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold text-[#FFA8A8] hover:text-white"
+            onClick={() => handleLoadSample(0)}
+            className="btn-secondary flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#FFA8A8] hover:text-white"
+          >
+            <UserCheck className="w-3.5 h-3.5 text-[#FF0000]" />
+            <span>Alexander (Full Stack)</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => handleLoadSample(1)}
+            className="btn-secondary flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#FFA8A8] hover:text-white"
           >
             <Sparkles className="w-3.5 h-3.5 text-[#FF0000]" />
-            <span>Load Sample Resume</span>
+            <span>Elena (Staff AI)</span>
           </button>
         </div>
       </div>
@@ -248,7 +252,7 @@ export const ResumeUpload: React.FC<ResumeUploadProps> = ({
                     <div>
                       <p className="text-sm font-semibold text-white">{fileDetails.name}</p>
                       <p className="text-xs text-gray-400">
-                        {(fileDetails.size / 1024).toFixed(1)} KB • Text successfully parsed
+                        {(fileDetails.size / 1024).toFixed(1)} KB • In-browser parsed text ready
                       </p>
                     </div>
                   </div>
@@ -289,7 +293,7 @@ export const ResumeUpload: React.FC<ResumeUploadProps> = ({
                     <UploadCloud className="w-7 h-7" />
                   </div>
                   <p className="text-base font-semibold text-white mb-1">
-                    {isParsing ? 'Parsing document...' : 'Click to upload or drag & drop'}
+                    {isParsing ? 'Parsing document in browser...' : 'Click to upload or drag & drop'}
                   </p>
                   <p className="text-xs text-gray-400 mb-4">
                     PDF, DOCX, or TXT (Max file size: 5MB)
@@ -312,7 +316,7 @@ export const ResumeUpload: React.FC<ResumeUploadProps> = ({
                 className="w-full p-4 rounded-xl bg-black/80 border border-[#830000]/50 text-white placeholder-gray-600 text-xs sm:text-sm font-mono focus:outline-none focus:border-[#FF0000] focus:ring-1 focus:ring-[#FF0000] transition-colors leading-relaxed"
               />
               <div className="flex justify-between items-center text-xs text-gray-500 mt-2">
-                <span>{resumeText.length} characters</span>
+                <span>{resumeText.length} characters • ~{Math.round(resumeText.split(/\s+/).filter(Boolean).length)} words</span>
                 {resumeText.length > 0 && (
                   <button
                     type="button"
@@ -422,7 +426,7 @@ export const ResumeUpload: React.FC<ResumeUploadProps> = ({
           <button
             type="submit"
             disabled={isLoading || isParsing}
-            className="btn-primary w-full sm:w-auto px-8 py-3.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2.5 shadow-red-glow disabled:opacity-50"
+            className="btn-primary w-full sm:w-auto px-8 py-3.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2.5 shadow-red-glow disabled:opacity-50 cursor-pointer"
           >
             <span>{isLoading ? 'Analyzing with Gemini...' : 'Analyze Resume'}</span>
             <ArrowRight className="w-4 h-4" />

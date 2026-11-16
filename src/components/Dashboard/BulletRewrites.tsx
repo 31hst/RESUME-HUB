@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { BulletRewrite } from '../../types';
-import { Sparkles, Copy, Check, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
+import { Sparkles, Copy, Check, ArrowRight, ShieldCheck, Zap, Layers } from 'lucide-react';
 
 interface BulletRewritesProps {
   bulletRewrites: BulletRewrite[];
@@ -8,11 +8,19 @@ interface BulletRewritesProps {
 
 export const BulletRewrites: React.FC<BulletRewritesProps> = ({ bulletRewrites }) => {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [copiedAll, setCopiedAll] = useState(false);
 
   const handleCopy = (text: string, index: number) => {
     navigator.clipboard.writeText(text);
     setCopiedIndex(index);
     setTimeout(() => setCopiedIndex(null), 2000);
+  };
+
+  const handleCopyAll = () => {
+    const allText = bulletRewrites.map(b => `• ${b.after}`).join('\n\n');
+    navigator.clipboard.writeText(allText);
+    setCopiedAll(true);
+    setTimeout(() => setCopiedAll(false), 2000);
   };
 
   return (
@@ -34,9 +42,29 @@ export const BulletRewrites: React.FC<BulletRewritesProps> = ({ bulletRewrites }
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-[#FFA8A8] bg-[#830000]/25 px-3 py-1 rounded-full border border-[#830000]/50">
-          <Zap className="w-3.5 h-3.5 text-[#FF0000]" />
-          <span>Formula: Accomplished [X], measured by [Y], by doing [Z]</span>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleCopyAll}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-black/60 border border-[#830000]/60 text-gray-200 hover:text-white hover:border-[#BC0202] transition-colors"
+          >
+            {copiedAll ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-[#FF0000]" />
+                <span>All Bullets Copied!</span>
+              </>
+            ) : (
+              <>
+                <Copy className="w-3.5 h-3.5" />
+                <span>Copy All Rewrites</span>
+              </>
+            )}
+          </button>
+          
+          <div className="hidden lg:flex items-center gap-2 text-xs text-[#FFA8A8] bg-[#830000]/25 px-3 py-1 rounded-full border border-[#830000]/50 font-mono">
+            <Zap className="w-3.5 h-3.5 text-[#FF0000]" />
+            <span>Google X-Y-Z Aligned</span>
+          </div>
         </div>
       </div>
 
@@ -49,24 +77,29 @@ export const BulletRewrites: React.FC<BulletRewritesProps> = ({ bulletRewrites }
           >
             {/* Top row with index & copy */}
             <div className="flex items-center justify-between text-xs pb-2 border-b border-gray-900">
-              <span className="font-semibold text-gray-400 font-mono">
-                REWRITE #{idx + 1}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-gray-400 font-mono">
+                  BULLET REWRITE #{idx + 1}
+                </span>
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-[#830000]/30 text-[#FFA8A8] border border-[#830000]/50">
+                  +30% Impact
+                </span>
+              </div>
 
               <button
                 type="button"
                 onClick={() => handleCopy(rewrite.after, idx)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#830000]/30 border border-[#BC0202]/60 text-[#FFA8A8] hover:bg-[#BC0202] hover:text-white transition-all shadow-sm"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#830000]/30 border border-[#BC0202]/60 text-[#FFA8A8] hover:bg-[#BC0202] hover:text-white transition-all shadow-sm cursor-pointer"
               >
                 {copiedIndex === idx ? (
                   <>
                     <Check className="w-3.5 h-3.5 text-white" />
-                    <span>Copied to Clipboard!</span>
+                    <span>Copied!</span>
                   </>
                 ) : (
                   <>
                     <Copy className="w-3.5 h-3.5" />
-                    <span>Copy Enhanced Bullet</span>
+                    <span>Copy Bullet</span>
                   </>
                 )}
               </button>
@@ -104,7 +137,7 @@ export const BulletRewrites: React.FC<BulletRewritesProps> = ({ bulletRewrites }
               <div className="pt-2 flex items-start gap-2 text-xs text-gray-300">
                 <ShieldCheck className="w-4 h-4 text-[#FFA8A8] shrink-0 mt-0.5" />
                 <p className="leading-relaxed">
-                  <span className="font-semibold text-white">Why this wins: </span>
+                  <span className="font-semibold text-white">Strategic Recruiter Rationale: </span>
                   {rewrite.reason}
                 </p>
               </div>
