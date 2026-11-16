@@ -2,8 +2,6 @@ import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { synthesizeResumeAnalysis } from './src/utils/aiAnalyzer';
 
-const DEFAULT_API_KEY = 'AQ.Ab8RN6KBVWD2_365-qdUxqMzrDM6ypC1ssWOWuZKTWx9TI603Q';
-
 const SYSTEM_PROMPT = `You are Resume Hub, an elite enterprise ATS (Applicant Tracking System) parser and world-class Senior Executive Career Strategist.
 Your mission is to rigorously analyze the candidate's resume against modern technical recruiting benchmarks and the specified target role and job description.
 
@@ -162,13 +160,14 @@ export default defineConfig(({ mode }) => {
                   return res.end(JSON.stringify({ error: 'Valid resume text (at least 20 characters) is required.' }));
                 }
 
-                const apiKey = clientApiKey || env.GEMINI_API_KEY || process.env.GEMINI_API_KEY || DEFAULT_API_KEY;
+                // Private server-side key from .env / process.env
+                const apiKey = env.GEMINI_API_KEY || process.env.GEMINI_API_KEY || clientApiKey;
 
                 let analysis: any = null;
 
-                // Try live Gemini API first
-                try {
-                  const userPrompt = `
+                if (apiKey) {
+                  try {
+                    const userPrompt = `
 RESUME TEXT:
 ${resumeText.trim()}
 
@@ -181,11 +180,14 @@ ${experienceLevel || 'Mid-Senior Level'}
 TARGET JOB DESCRIPTION / REQUIREMENTS:
 ${jobDescription ? jobDescription.trim() : 'Analyze against industry standards for the specified target role.'}
 `;
-                  const model = env.GEMINI_MODEL || process.env.GEMINI_MODEL || 'gemini-2.5-flash';
-                  analysis = await callGemini(apiKey, userPrompt, model);
-                } catch (apiErr: any) {
-                  console.warn('Gemini API call failed or key rejected, synthesizing high-precision local analysis from resume text:', apiErr.message);
-                  // Intelligent local ATS analysis fallback directly from the candidate's uploaded resume text
+                    const model = env.GEMINI_MODEL || process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+                    analysis = await callGemini(apiKey, userPrompt, model);
+                  } catch (apiErr: any) {
+                    console.warn('Gemini API call failed, generating localized ATS analysis:', apiErr.message);
+                  }
+                }
+
+                if (!analysis) {
                   analysis = synthesizeResumeAnalysis(
                     resumeText,
                     targetRole || 'Software Engineer',

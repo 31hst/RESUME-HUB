@@ -26,8 +26,6 @@ import {
 import { synthesizeResumeAnalysis } from './utils/aiAnalyzer';
 import { AlertCircle, X, Sparkles } from 'lucide-react';
 
-const CONFIGURED_API_KEY = 'AQ.Ab8RN6KBVWD2_365-qdUxqMzrDM6ypC1ssWOWuZKTWx9TI603Q';
-
 export function App() {
   const [currentView, setCurrentView] = useState<'landing' | 'analyzer' | 'dashboard'>('landing');
   const [analysisResult, setAnalysisResult] = useState<ResumeAnalysis | null>(null);
@@ -36,18 +34,7 @@ export function App() {
   const [hasCustomJd, setHasCustomJd] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
-  // Configured API Key state
-  const [apiKey, setApiKey] = useState(() => {
-    return sessionStorage.getItem('resumehub_gemini_key') || CONFIGURED_API_KEY;
-  });
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
-
-  const handleSaveApiKey = (key: string) => {
-    const val = key.trim() || CONFIGURED_API_KEY;
-    setApiKey(val);
-    sessionStorage.setItem('resumehub_gemini_key', val);
-  };
 
   const fireCelebrationConfetti = () => {
     try {
@@ -103,7 +90,6 @@ export function App() {
             targetRole: data.targetRole,
             jobDescription: data.jobDescription,
             experienceLevel: data.experienceLevel,
-            apiKey: apiKey || CONFIGURED_API_KEY,
           }),
         });
 
@@ -133,7 +119,6 @@ export function App() {
       setTimeout(fireCelebrationConfetti, 400);
     } catch (err: any) {
       console.error('Analysis failed:', err);
-      // Fallback synthesis guarantees user NEVER gets an error screen
       const fallbackAnalysis = synthesizeResumeAnalysis(
         data.resumeText,
         data.targetRole,
@@ -171,12 +156,35 @@ export function App() {
       <ApiKeyModal
         isOpen={isApiKeyModalOpen}
         onClose={() => setIsApiKeyModalOpen(false)}
-        apiKey={apiKey}
-        onSaveApiKey={handleSaveApiKey}
+        apiKey=""
+        onSaveApiKey={() => {}}
       />
 
       {/* Loading Analysis Modal */}
       <AnalyzingModal isOpen={isAnalyzing} />
+
+      {/* Error Floating Banner */}
+      {errorMsg && (
+        <div className="max-w-4xl mx-auto px-4 mt-6 w-full">
+          <div className="p-4 rounded-xl bg-[#830000]/30 border border-[#BC0202] text-sm text-white flex items-start gap-3 shadow-red-glow">
+            <AlertCircle className="w-5 h-5 text-[#FF0000] shrink-0 mt-0.5" />
+            <div className="flex-1 space-y-2">
+              <p className="font-semibold">{errorMsg}</p>
+              <div className="flex flex-wrap gap-2 pt-1">
+                <button
+                  onClick={() => handleLoadSampleReport('alexander-vance')}
+                  className="px-3 py-1 rounded-lg text-xs font-medium border border-[#830000] text-gray-200 hover:text-white hover:border-[#BC0202] transition-colors"
+                >
+                  Load Sample Report Instead
+                </button>
+              </div>
+            </div>
+            <button onClick={() => setErrorMsg(null)} className="text-gray-400 hover:text-white">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Main View Router */}
       <main className="flex-1">
