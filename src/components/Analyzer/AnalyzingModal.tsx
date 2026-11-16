@@ -63,7 +63,7 @@ export const AnalyzingModal: React.FC<AnalyzingModalProps> = ({ isOpen }) => {
           Deconstructing Resume
         </h3>
         <p className="text-xs text-gray-400 mb-6">
-          AI CareerLens &amp; ATS Evaluation Engine
+          AI Resume Hub &amp; ATS Evaluation Engine
         </p>
 
         {/* Active Step Box */}

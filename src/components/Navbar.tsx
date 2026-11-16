@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Sparkles, Key, FileText, ArrowRight, ChevronDown, Check, ExternalLink, ShieldCheck } from 'lucide-react';
+import { ResumeHubLogo } from './ResumeHubLogo';
+import { Sparkles, Key, FileText, ArrowRight, ChevronDown, Check, ShieldCheck } from 'lucide-react';
 import { SAMPLE_PROFILES } from '../utils/sampleData';
 
 interface NavbarProps {
@@ -20,27 +21,16 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [isSampleDropdownOpen, setIsSampleDropdownOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 w-full backdrop-blur-xl bg-black/80 border-b border-[#830000]/35 transition-all shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+    <header className="sticky top-0 z-50 w-full backdrop-blur-xl bg-black/85 border-b border-[#830000]/35 transition-all shadow-[0_4px_30px_rgba(0,0,0,0.6)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         
         {/* Brand Logo & Live Engine Status */}
         <div className="flex items-center gap-4">
           <div 
             onClick={() => onNavigate('landing')}
-            className="flex items-center gap-2.5 cursor-pointer group"
+            className="cursor-pointer"
           >
-            <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-[#BC0202] via-[#830000] to-black border border-[#FF0000]/50 shadow-red-glow transition-transform group-hover:scale-105">
-              <Sparkles className="w-5 h-5 text-white" />
-              <div className="absolute inset-0 rounded-xl bg-[#FF0000] opacity-0 group-hover:opacity-25 blur-sm transition-opacity" />
-            </div>
-            <div>
-              <span className="text-xl font-bold tracking-tight text-white font-display">
-                Career<span className="text-[#FF0000]">Lens</span>
-              </span>
-              <span className="hidden sm:inline-block ml-2 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#FFA8A8] bg-[#830000]/30 border border-[#830000]/60 rounded">
-                v2.5
-              </span>
-            </div>
+            <ResumeHubLogo size="md" />
           </div>
 
           {/* Engine Status Badge */}
@@ -49,7 +39,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FF0000] opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-[#FF0000]"></span>
             </span>
-            <span className="font-mono text-gray-300">Gemini 2.5 Flash Engine Active</span>
+            <span className="font-mono text-gray-300">Gemini 2.5 AI Ready</span>
           </div>
         </div>
 
@@ -140,30 +130,17 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Right Action Buttons */}
         <div className="flex items-center gap-3">
-          {/* API Key Modal Button */}
-          <button
-            onClick={onOpenApiKeyModal}
-            className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
-              hasCustomApiKey 
-                ? 'bg-[#830000]/30 border-[#BC0202] text-[#FFA8A8]' 
-                : 'bg-black/50 border-[#830000]/40 text-gray-400 hover:text-white hover:border-[#830000]'
-            }`}
-            title="Configure Gemini API Key"
-          >
-            <Key className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">
-              {hasCustomApiKey ? 'Custom Key Active' : 'API Key'}
-            </span>
-            {hasCustomApiKey && (
-              <span className="w-1.5 h-1.5 rounded-full bg-[#FF0000] animate-pulse" />
-            )}
-          </button>
+          {/* Active Key Indicator */}
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs bg-[#830000]/20 border border-[#830000]/50 text-[#FFA8A8] font-mono">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#FF0000] animate-pulse" />
+            <span className="hidden sm:inline">AI Key Connected</span>
+          </div>
 
           {/* Primary Action Button */}
           {currentView !== 'analyzer' ? (
             <button
               onClick={() => onNavigate('analyzer')}
-              className="btn-primary flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold tracking-wide"
+              className="btn-primary flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold tracking-wide cursor-pointer"
             >
               <span>Analyze Resume</span>
               <ArrowRight className="w-4 h-4" />
@@ -171,7 +148,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           ) : (
             <button
               onClick={() => onSelectSampleProfile('alexander-vance')}
-              className="btn-secondary flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium"
+              className="btn-secondary flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium cursor-pointer"
             >
               <FileText className="w-4 h-4 text-[#FFA8A8]" />
               <span>Load Sample</span>

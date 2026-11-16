@@ -41,7 +41,7 @@ export const HowItWorks: React.FC<HowItWorksProps> = ({ onStartAnalysis }) => {
             Transparent Workflow
           </div>
           <h2 className="text-3xl sm:text-5xl font-extrabold font-display tracking-tight text-white mb-4">
-            How CareerLens Works
+            How Resume Hub Works
           </h2>
           <p className="text-gray-400 text-base sm:text-lg">
             From raw document to senior career execution in under 15 seconds.

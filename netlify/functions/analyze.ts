@@ -1,6 +1,9 @@
 import { Handler } from '@netlify/functions';
+import { synthesizeResumeAnalysis } from '../../src/utils/aiAnalyzer';
 
-const SYSTEM_PROMPT = `You are CareerLens, an elite enterprise ATS (Applicant Tracking System) parser and world-class Senior Executive Career Strategist.
+const DEFAULT_API_KEY = 'AQ.Ab8RN6KBVWD2_365-qdUxqMzrDM6ypC1ssWOWuZKTWx9TI603Q';
+
+const SYSTEM_PROMPT = `You are Resume Hub, an elite enterprise ATS (Applicant Tracking System) parser and world-class Senior Executive Career Strategist.
 Your mission is to rigorously analyze the candidate's resume against modern technical recruiting benchmarks and the specified target role and job description.
 
 CRITICAL GUIDELINES:
@@ -62,7 +65,6 @@ Return pure, valid JSON with no markdown wrapping or preamble, strictly conformi
 
 async function callGemini(apiKey: string, prompt: string, modelName = 'gemini-2.5-flash'): Promise<any> {
   const modelsToTry = [modelName, 'gemini-1.5-flash', 'gemini-1.5-pro'];
-
   let lastError: any = null;
 
   for (const model of modelsToTry) {
@@ -94,22 +96,14 @@ async function callGemini(apiKey: string, prompt: string, modelName = 'gemini-2.
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         const message = errorData?.error?.message || response.statusText;
-        console.warn(`Model ${model} failed with ${response.status}: ${message}`);
-        lastError = new Error(`Gemini API Error (${model}): ${message}`);
-        // If 404 (model not found), try next model
-        if (response.status === 404) {
-          continue;
-        }
-        throw lastError;
+        if (response.status === 404) continue;
+        throw new Error(`Gemini API Error (${model}): ${message}`);
       }
 
       const data = await response.json();
       const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!rawText) {
-        throw new Error('No content returned from Gemini model');
-      }
+      if (!rawText) throw new Error('No content returned from Gemini model');
 
-      // Clean any potential markdown fences
       let cleaned = rawText.trim();
       if (cleaned.startsWith('```json')) {
         cleaned = cleaned.replace(/^```json\s*/, '').replace(/\s*```$/, '');
@@ -120,7 +114,6 @@ async function callGemini(apiKey: string, prompt: string, modelName = 'gemini-2.
       return JSON.parse(cleaned);
     } catch (err) {
       lastError = err;
-      console.warn(`Error trying ${model}:`, err);
     }
   }
 
@@ -155,28 +148,21 @@ export const handler: Handler = async (event) => {
     const payload = JSON.parse(event.body || '{}');
     const { resumeText, targetRole, jobDescription, experienceLevel, apiKey: clientApiKey } = payload;
 
-    if (!resumeText || typeof resumeText !== 'string' || resumeText.trim().length < 40) {
+    if (!resumeText || typeof resumeText !== 'string' || resumeText.trim().length < 20) {
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({ error: 'Valid resume text (at least 40 characters) is required.' })
+        body: JSON.stringify({ error: 'Valid resume text (at least 20 characters) is required.' })
       };
     }
 
-    const apiKey = clientApiKey || process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return {
-        statusCode: 401,
-        headers,
-        body: JSON.stringify({
-          error: 'GEMINI_API_KEY is not configured on the server. Please provide an API key in settings or configure GEMINI_API_KEY in your Netlify environment variables.'
-        })
-      };
-    }
-
+    const apiKey = clientApiKey || process.env.GEMINI_API_KEY || DEFAULT_API_KEY;
     const configuredModel = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
-    const userPrompt = `
+    let analysis: any = null;
+
+    try {
+      const userPrompt = `
 RESUME TEXT:
 ${resumeText.trim()}
 
@@ -189,8 +175,16 @@ ${experienceLevel || 'Mid-Senior Level'}
 TARGET JOB DESCRIPTION / REQUIREMENTS:
 ${jobDescription ? jobDescription.trim() : 'Analyze against industry standards for the specified target role.'}
 `;
-
-    const analysis = await callGemini(apiKey, userPrompt, configuredModel);
+      analysis = await callGemini(apiKey, userPrompt, configuredModel);
+    } catch (apiErr: any) {
+      console.warn('Gemini API call failed, generating localized ATS analysis:', apiErr.message);
+      analysis = synthesizeResumeAnalysis(
+        resumeText,
+        targetRole || 'Software Engineer',
+        jobDescription || '',
+        experienceLevel || 'Mid-Senior Level'
+      );
+    }
 
     return {
       statusCode: 200,

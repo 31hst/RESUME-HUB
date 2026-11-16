@@ -22,7 +22,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   const handleDownload = async () => {
     try {
       setIsExporting(true);
-      await downloadReportAsPdf('resume-dashboard-report', fileName?.replace(/\.[^/.]+$/, '') || 'CareerLens_Analysis');
+      await downloadReportAsPdf('resume-dashboard-report', fileName?.replace(/\.[^/.]+$/, '') || 'ResumeHub_Analysis');
       setExportSuccess(true);
       setTimeout(() => setExportSuccess(false), 2500);
     } catch (err) {
