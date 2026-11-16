@@ -68,3 +68,4 @@ Resume Hub is architected for instant deployment onto **Netlify**:
 - **Client-Side Extraction**: Documents are parsed within the browser session via WebAssembly/JS.
 - **No Persistent Storage**: Extracted text is only sent in-memory during active analysis and is never written to disk.
 - **Serverless Key Isolation**: In production, API keys remain securely in Netlify's serverless environment.
+# RESUME-HUB
